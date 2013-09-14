@@ -100,7 +100,7 @@ class Unique(object):
         self.conflict_clause = ""
 
     def __repr__(self):
-        return "UNIQUE({}) {}".format(", ".join(self.colnames),
+        return "UNIQUE ({}) {}".format(", ".join(self.colnames),
                                        self.conflict_clause)\
                .strip()
 
@@ -200,7 +200,7 @@ class Table(object):
     CREATE TABLE Albums
       (_id INTEGER PRIMARY KEY,
       albumname TEXT NOT NULL DEFAULT '',
-      artistname TEXT NOT NULL
+      artistname TEXT NOT NULL,
     <BLANKLINE>
       FOREIGN KEY (artistname) REFERENCES artist(name) ON DELETE CASCADE,
       UNIQUE (albumname) ON CONFLICT REPLACE)
@@ -213,10 +213,16 @@ class Table(object):
         self._constraints = []
 
     def __repr__(self):
+        constraints = ",\n  ".join(map(str, self._constraints))
+        columns = ",\n  ".join(map(str, self._columns))
+
+        if len(constraints) > 0:
+            # Add a comma at the end
+            columns += ","
+
         return _C_T.format(table_name = self.name,
-                           columns = ",\n  ".join(map(str, self._columns)),
-                           constraints = ",\n  ".join(map(str,
-                                                          self._constraints)))
+                           columns = columns,
+                           constraints = constraints)
 
     def cols(self, *columns):
         self._columns.extend(columns)
