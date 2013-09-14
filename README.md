@@ -3,6 +3,9 @@ AndroidCodeGenerator
 
 This is a python module which generates Android classes. It is most useful for creating an initial database and contentprovider for a project.
 
+I plan on adding all necessary classes for a database with a contentprovider to start with. More types
+of classes might follow as I see a need for them.
+
 An example generation
 can be seen below where quite a simple table is created and
 then a java OrmClass is generated.
