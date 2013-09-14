@@ -17,8 +17,8 @@ can be seen below where quite a simple table is created and
 then a java OrmClass is generated.
 
 ```python
-from db_table import Table, Column, ForeignKey, Unique
-from dbitem import DBItem
+from AndroidCodeGenerator.db_table import Table, Column, ForeignKey, Unique
+from AndroidCodeGenerator.dbitem import DBItem
 
 t = Table('Album').cols(Column('_id').integer.primary_key,\
                         Column('albumname').text.not_null.default("''"), \
