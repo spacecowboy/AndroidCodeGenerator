@@ -6,6 +6,8 @@ This is a python module which generates Android classes. It is most useful for c
 I plan on adding all necessary classes for a database with a contentprovider to start with. More types
 of classes might follow as I see a need for them.
 
+The database structure is basically the same as the one I present in my [tutorial](https://github.com/spacecowboy/AndroidTutorialContentProvider).
+
 An example generation
 can be seen below where quite a simple table is created and
 then a java OrmClass is generated.
