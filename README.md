@@ -115,10 +115,10 @@ public class AlbumItem extends DBItem {
 "CREATE TABLE Album"
 +"  (_id INTEGER PRIMARY KEY,"
 +"  albumname TEXT NOT NULL DEFAULT '',"
-+"  artistname TEXT NOT NULL"
++"  artistname TEXT NOT NULL",
 +""
 +"  FOREIGN KEY (artistname) REFERENCES artist(name) ON DELETE CASCADE,"
-+"  UNIQUE(albumname) ON CONFLICT REPLACE)";
++"  UNIQUE (albumname) ON CONFLICT REPLACE)";
 }
 ```
 
