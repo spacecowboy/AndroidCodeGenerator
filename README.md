@@ -7,17 +7,22 @@ An example generation
 can be seen below where quite a simple table is created and
 then a java OrmClass is generated.
 
+```python
+    from db_table import Table, Column, ForeignKey, Unique
 
-    >>> from db_table import Table, Column, ForeignKey, Unique
-
-    >>> t = Table('Album').cols(Column('_id').integer.primary_key,\
+    t = Table('Album').cols(Column('_id').integer.primary_key,\
                             Column('albumname').text.not_null.default("''"), \
                             Column('artistname').text.not_null)\
     .constraints(ForeignKey('artistname').references('artist', 'name')\
               .on_delete_cascade,\
              Unique('albumname').on_conflict_replace)
 
-    >>> print(get_orm_class(t))
+    get_orm_class(t)
+```
+
+Result:
+
+```java
     package com.example.appname.database;
 
     import android.content.ContentValues;
@@ -69,3 +74,4 @@ then a java OrmClass is generated.
       FOREIGN KEY (artistname) REFERENCES artist(name) ON DELETE CASCADE,
       UNIQUE(albumname) ON CONFLICT REPLACE)";
     }
+```
