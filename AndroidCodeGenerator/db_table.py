@@ -83,16 +83,16 @@ class Unique(object):
     Example:
 
     >>> Unique('name')
-    UNIQUE(name)
+    UNIQUE (name)
 
     >>> Unique('artist', 'album')
-    UNIQUE(artist, album)
+    UNIQUE (artist, album)
 
     >>> Unique('hash').on_conflict_replace
-    UNIQUE(hash) ON CONFLICT REPLACE
+    UNIQUE (hash) ON CONFLICT REPLACE
 
     >>> Unique('hash').on_conflict_rollback
-    UNIQUE(hash) ON CONFLICT ROLLBACK
+    UNIQUE (hash) ON CONFLICT ROLLBACK
     """
 
     def __init__(self, *colnames):
@@ -150,7 +150,7 @@ class ForeignKey(object):
                            foreign_column=self.foreign_col,
                            cascade_case=self.cascade_case)
 
-    def references(self, table_name, col_name):
+    def references(self, table_name, col_name="_id"):
         self.foreign_table = table_name
         self.foreign_col = col_name
         return self
@@ -173,19 +173,21 @@ class ForeignKey(object):
 
 class Table(object):
     """An SQL table which consists of columns
-    and constraints.
+    and constraints. It is prepopualted with an _id column
+    which is the primary key.
 
     Example usage:
     >>> Table('People')
     CREATE TABLE People
-      (
+      (_id INTEGER PRIMARY KEY
     <BLANKLINE>
       )
 
     >>> Table('People').cols(Column('name').text.not_null.default("''"), \
                              Column('age').integer.not_null.default(18))
     CREATE TABLE People
-      (name TEXT NOT NULL DEFAULT '',
+      (_id INTEGER PRIMARY KEY,
+      name TEXT NOT NULL DEFAULT '',
       age INTEGER NOT NULL DEFAULT 18
     <BLANKLINE>
       )
@@ -196,17 +198,18 @@ class Table(object):
               .on_delete_cascade,\
              Unique('albumname').on_conflict_replace)
     CREATE TABLE Albums
-      (albumname TEXT NOT NULL DEFAULT '',
+      (_id INTEGER PRIMARY KEY,
+      albumname TEXT NOT NULL DEFAULT '',
       artistname TEXT NOT NULL
     <BLANKLINE>
       FOREIGN KEY (artistname) REFERENCES artist(name) ON DELETE CASCADE,
-      UNIQUE(albumname) ON CONFLICT REPLACE)
+      UNIQUE (albumname) ON CONFLICT REPLACE)
 
     """
 
     def __init__(self, name):
         self.name = name
-        self._columns = []
+        self._columns = [Column('_id').integer.primary_key]
         self._constraints = []
 
     def __repr__(self):
