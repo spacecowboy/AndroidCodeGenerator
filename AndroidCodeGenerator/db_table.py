@@ -13,6 +13,12 @@ _C_T = \
 _F_K = "FOREIGN KEY ({column_name}) REFERENCES \
 {foreign_table}({foreign_column}) {cascade_case}"
 
+_C_TR = \
+"""CREATE {0._temp} TRIGGER {0._ifnotexists} {0.name}
+  {0._when} {0._action}
+  BEGIN
+    {body}
+  END"""
 
 class Column(object):
     """Used to build a column definition. Example usage:
@@ -230,4 +236,117 @@ class Table(object):
 
     def constraints(self, *constraints):
         self._constraints.extend(constraints)
+        return self
+
+    def list_column_names(self, sep=",", withid=False, prefix=""):
+        """Use to get a single string of column names.
+
+        Examples:
+
+        >>> living = Table('LivePerson').cols(\
+                        Column('firstname').text.not_null.default("''"),\
+                        Column('lastname').text.not_null.default("''"),\
+                        Column('bio').text.not_null.default("''"))
+
+        >>> living.list_column_names()
+        'firstname,lastname,bio'
+
+        >>> living.list_column_names(withid=True, prefix='old.')
+        'old._id,old.firstname,old.lastname,old.bio'
+        """
+        cols = self._columns
+        if not withid:
+            cols = []
+            for c in self._columns:
+                if c.name != "_id":
+                    cols.append(c)
+
+        return sep.join([prefix + c.name for c in cols])
+
+
+class Trigger(object):
+    """Create an sql trigger
+
+    Examples:
+
+    >>> Trigger('tr_archive').temp.if_not_exists.before.delete_on('notes')\
+    .do_sql('INSERT INTO archive (noteid,notetext) VALUES (old._id,old.text)')
+    CREATE TEMP TRIGGER IF NOT EXISTS tr_archive
+      BEFORE DELETE ON notes
+      BEGIN
+        INSERT INTO archive (noteid,notetext) VALUES (old._id,old.text);
+      END
+    """
+
+    def __init__(self, name):
+        self.name = name
+        self._temp = ""
+        self._ifnotexists = ""
+        self._action = None
+        self._when = None
+        self._body = []
+
+    def __repr__(self):
+        if self._when is None:
+            raise ValueError('You must specify a trigger time, like:\
+            Trigger("bob").after, .before or .instead_of')
+
+        if self._action is None:
+            raise ValueError('You must specify a trigger action, like:\
+            Trigger("bob").update_on("sometable)')
+
+        if len(self._body) < 1:
+            raise ValueError('You must specify a trigger body, like:\
+            Trigger("bob").do("SQL")')
+
+        return _C_TR.format(self,
+                            body="\n".join(self._body))
+
+    @property
+    def temp(self):
+        self._temp = "TEMP"
+        return self
+
+    @property
+    def if_not_exists(self):
+        self._ifnotexists = "IF NOT EXISTS"
+        return self
+
+    @property
+    def before(self):
+        self._when = "BEFORE"
+        return self
+
+    @property
+    def after(self):
+        self._when = "AFTER"
+        return self
+
+    @property
+    def instead_of(self):
+        self._when = "INSTEAD OF"
+        return self
+
+    def delete_on(self, tablename):
+        self._action = "DELETE ON {}".format(tablename)
+        return self
+
+    def insert_on(self, tablename):
+        self._action = "INSERT ON {}".format(tablename)
+        return self
+
+    def update_on(self, tablename, *cols):
+        of_cols = ""
+        if cols is not None and len(cols) > 0:
+            of_cols = "OF {}".format(",".join(cols))
+
+        self._action = "UPDATE {} ON {}".format(of_cols,
+                                                tablename)
+        return self
+
+    def do_sql(self, sqlstatement):
+        end = ""
+        if not sqlstatement.strip().endswith(";"):
+            end = ";"
+        self._body.append(sqlstatement.strip() + end)
         return self
