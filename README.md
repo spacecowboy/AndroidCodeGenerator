@@ -20,11 +20,11 @@ then a java OrmClass is generated.
 from AndroidCodeGenerator.db_table import Table, Column, ForeignKey, Unique
 from AndroidCodeGenerator.dbitem import DBItem
 
-t = Table('Album').cols(Column('albumname').text.not_null.default("''"), \
-                        Column('artistname').text.not_null)\
-                  .constraints(ForeignKey('artistname').references('artist', 'name')\
+t = Table('Album').add_cols(Column('albumname').text.not_null.default("''"), \
+                            Column('artistname').text.not_null)\
+                  .add_constraints(ForeignKey('artistname').references('artist', 'name')\
                                          .on_delete_cascade,\
-                               Unique('albumname').on_conflict_replace)
+                                   Unique('albumname').on_conflict_replace)
 
 print(DBItem(t))
 ```
