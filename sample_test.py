@@ -5,12 +5,12 @@ from AndroidCodeGenerator.db_table import (Table, Column, ForeignKey, Unique,
 from AndroidCodeGenerator.database_triggers import DatabaseTriggers
 from AndroidCodeGenerator.sql_validator import SQLTester
 
-persons = Table('Person').cols(Column('firstname').text.not_null.default("''"),\
+persons = Table('Person').add_cols(Column('firstname').text.not_null.default("''"),\
                                Column('lastname').text.not_null.default("''"),\
                                Column('bio').text.not_null.default("''"))\
-                         .constraints(Unique('firstname').on_conflict_replace)
+                         .add_constraints(Unique('firstname').on_conflict_replace)
 
-log = Table('Log').cols(Column('pId').integer.not_null,
+log = Table('Log').add_cols(Column('pId').integer.not_null,
                         Column('firstname').text.not_null,
                         Column('lastname').text.not_null,
                         Column('bio').text.not_null,

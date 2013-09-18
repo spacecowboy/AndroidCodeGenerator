@@ -195,8 +195,8 @@ class Table(object):
     <BLANKLINE>
       )
 
-    >>> Table('People').cols(Column('name').text.not_null.default("''"), \
-                             Column('age').integer.not_null.default(18))
+    >>> Table('People').add_cols(Column('name').text.not_null.default("''"), \
+                                 Column('age').integer.not_null.default(18))
     CREATE TABLE People
       (_id INTEGER PRIMARY KEY,
       name TEXT NOT NULL DEFAULT '',
@@ -204,9 +204,9 @@ class Table(object):
     <BLANKLINE>
       )
 
-    >>> Table('Albums').cols(Column('albumname').text.not_null.default("''"), \
-                             Column('artistname').text.not_null)\
-.constraints(ForeignKey('artistname').references('artist', 'name')\
+    >>> Table('Albums').add_cols(Column('albumname').text.not_null.default("''"), \
+                                 Column('artistname').text.not_null)\
+.add_constraints(ForeignKey('artistname').references('artist', 'name')\
               .on_delete_cascade,\
              Unique('albumname').on_conflict_replace)
     CREATE TABLE Albums
@@ -236,11 +236,11 @@ class Table(object):
                            columns = columns,
                            constraints = constraints)
 
-    def cols(self, *columns):
+    def add_cols(self, *columns):
         self._columns.extend(columns)
         return self
 
-    def constraints(self, *constraints):
+    def add_constraints(self, *constraints):
         self._constraints.extend(constraints)
         return self
 
@@ -253,7 +253,7 @@ class Table(object):
 
         Examples:
 
-        >>> living = Table('LivePerson').cols(\
+        >>> living = Table('LivePerson').add_cols(\
                         Column('firstname').text.not_null.default("''"),\
                         Column('lastname').text.not_null.default("''"),\
                         Column('bio').text.not_null.default("''"))
