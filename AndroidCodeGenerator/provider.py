@@ -18,7 +18,10 @@ from dbitem import DBItem
 from database_handler import DatabaseHandler
 
 class Provider(object):
-    def __init__(self, *items):
+    def __init__(self, *items, **kwargs):
+        self.pkg = "com.example.appname.database"
+        if 'pkg' in kwargs:
+            self.pkg = kwargs['pkg']
         self.dbitems = []
         if items is not None and len(items) > 0:
             self.add_dbitems(*items)
@@ -75,11 +78,10 @@ MATCH_QUERY_TEMPLATE = """
 """
 
 PROVIDER_TEMPLATE = """
-package com.example.appname.database;
+package {provider.pkg};
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.net.Uri;

@@ -7,28 +7,32 @@ import os, errno
 import dbitem
 from dbitem import DBItem
 from database_handler import DatabaseHandler
+from database_triggers import DatabaseTriggers
 from provider import Provider
 
 class Generator(object):
 
-    def __init__(self, path = "./", *sqltables):
+    def __init__(self, path = "./", pkg="com.example.appname.database"):
         self.path = path
+        self.pkg = pkg
         self.tables = []
-        if sqltables is not None and len(sqltables) > 0:
-            self.add_tables(sqltables)
+        self.triggers = []
 
     def add_tables(self, *sqltables):
         self.tables.extend(sqltables)
 
+    def add_triggers(self, *triggers):
+        self.triggers.extend(triggers)
+
     def write(self):
         mkdir_p(self.path)
 
-        db_handler = DatabaseHandler("SampleDB")
-        provider = Provider()
+        db_handler = DatabaseHandler("SampleDB", pkg=self.pkg)
+        provider = Provider(pkg=self.pkg)
 
         # Generate dbitem files
         for table in self.tables:
-            item = DBItem(table)
+            item = DBItem(table, pkg=self.pkg)
             filename = item.classname + ".java"
             fpath = os.path.join(self.path, filename)
             with open(fpath, 'w') as javafile:
@@ -43,6 +47,13 @@ class Generator(object):
                              "DBItem.java")
         with open(fpath, 'w') as javafile:
             javafile.write(dbitem.DBITEM_CLASS)
+
+        # Triggers
+        fpath = os.path.join(self.path,
+                             "DatabaseTriggers.java")
+        with open(fpath, 'w') as javafile:
+            javafile.write(str(DatabaseTriggers(*self.triggers,
+                                                pkg=self.pkg)))
 
         # Database handler
         fpath = os.path.join(self.path,

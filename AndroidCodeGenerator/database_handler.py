@@ -18,8 +18,11 @@ from dbitem import DBItem
 class DatabaseHandler(object):
     """Generates a DatabaseHandler.java file"""
 
-    def __init__(self, databasename, *items):
+    def __init__(self, databasename, *items, **kwargs):
         self.databasename = databasename
+        self.pkg = "com.example.appname.database"
+        if 'pkg' in kwargs:
+            self.pkg = kwargs['pkg']
         self.dbitems = []
         if items is not None and len(items) > 0:
             self.add_dbitems(*items)
@@ -46,6 +49,7 @@ class DatabaseHandler(object):
 
     def __repr__(self):
         return HANDLER_TEMPLATE.format(classname=self.classname,
+                                       pkg=self.pkg,
                                        databasename=self.databasename,
                                        create_tables=self.create_tables(),
                                        table_getters=self.table_getters())
@@ -108,7 +112,7 @@ GETALL_TEMPLATE = """
     }}
 """
 
-HANDLER_TEMPLATE = """package com.example.appname.database;
+HANDLER_TEMPLATE = """package {pkg};
 
 import java.util.ArrayList;
 import java.util.List;
@@ -156,12 +160,18 @@ public class {classname} extends SQLiteOpenHelper {{
             // db.setForeignKeyConstraintsEnabled(true);
             // This line works everywhere though
             db.execSQL("PRAGMA foreign_keys=ON;");
+
+            // Create temporary triggers
+            DatabaseTriggers.createTemp(db);
         }}
     }}
 
     @Override
     public synchronized void onCreate(SQLiteDatabase db) {{
         {create_tables}
+
+        // Create Triggers
+        DatabaseTriggers.create(db);
     }}
 
     // Upgrading database

@@ -81,6 +81,12 @@ class Column(object):
     def default(self, val):
         return self.set_constraint(self.constraint,
                                    "DEFAULT {}".format(val))
+    @property
+    def default_current_timestamp(self):
+        '''Use with timestamp type to default to now.
+        Stored as YYYY-MM-DD HH:MM:SS'''
+        return self.set_constraint(self.constraint,
+                                   "DEFAULT CURRENT_TIMESTAMP")
 
 
 class Unique(object):
@@ -238,8 +244,12 @@ class Table(object):
         self._constraints.extend(constraints)
         return self
 
-    def list_column_names(self, sep=",", withid=False, prefix=""):
-        """Use to get a single string of column names.
+    def list_column_names(self, sep=",", withid=False, prefix="",
+                          exclude=None):
+        """Use to get a single string of column names. By default,
+        it will exclude the _id column. Give an empty list
+        to include _id. If you want to exclude as many columns as you
+        like.
 
         Examples:
 
@@ -251,14 +261,25 @@ class Table(object):
         >>> living.list_column_names()
         'firstname,lastname,bio'
 
+        >>> living.list_column_names(exclude=[])
+        '_id,firstname,lastname,bio'
+
+        >>> living.list_column_names(exclude=['_id'])
+        'firstname,lastname,bio'
+
+        >>> living.list_column_names(exclude=['lastname', 'bio'])
+        '_id,firstname'
+
         >>> living.list_column_names(withid=True, prefix='old.')
         'old._id,old.firstname,old.lastname,old.bio'
         """
         cols = self._columns
+        if exclude is None:
+            exclude = ["_id"]
         if not withid:
             cols = []
             for c in self._columns:
-                if c.name != "_id":
+                if c.name not in exclude:
                     cols.append(c)
 
         return sep.join([prefix + c.name for c in cols])
@@ -287,6 +308,10 @@ class Trigger(object):
         self._body = []
 
     def __repr__(self):
+        sql = self.sql_trigger()
+        return '"\n+"'.join(sql.split('\n'))
+
+    def sql_trigger(self):
         if self._when is None:
             raise ValueError('You must specify a trigger time, like:\
             Trigger("bob").after, .before or .instead_of')
@@ -306,6 +331,10 @@ class Trigger(object):
     def temp(self):
         self._temp = "TEMP"
         return self
+
+    @property
+    def is_temp(self):
+        return len(self._temp) > 0
 
     @property
     def if_not_exists(self):

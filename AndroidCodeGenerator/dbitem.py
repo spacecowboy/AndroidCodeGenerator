@@ -20,8 +20,9 @@ from db_table import Table
 class DBItem(object):
     """Generates an ORM class for the given table"""
 
-    def __init__(self, sql_table):
+    def __init__(self, sql_table, pkg='com.example.appname.database'):
         self.sql_table = sql_table
+        self.pkg = pkg
 
     def __repr__(self):
         java_cols = map(JavaColumn, self.sql_table._columns)
@@ -34,6 +35,7 @@ class DBItem(object):
 
         return CLASS_TEMPLATE.format(
                 table=self.sql_table,
+                pkg=self.pkg,
                 sqltable='"\n+"'.join(str(self.sql_table).split('\n')),
                 classname=self.classname,
                 baseurihash=self.baseurihash,
@@ -52,9 +54,26 @@ class DBItem(object):
             if x.var_name != "_id":
                 no_id.append(x)
 
-        return "\n        "\
-                .join(["values.put({}, {});"\
-                       .format(x.const_name, x.var_name) for x in no_id])
+        result = ""
+        sep = "\n        "
+        for java_col in no_id:
+            if "CURRENT_" in java_col.column.constraint:
+                # Timestamp, special case here
+                result = \
+                sep.join([result,
+                          "if ({1} != null)\
+ values.put({0}, {1});".format(java_col.const_name,
+                               java_col.var_name)])
+            else:
+                result = \
+                sep.join([result,
+                          "values.put({0}, {1});".format(java_col.const_name,
+                                                         java_col.var_name)])
+
+        return result
+#        return "\n        "\
+#                .join(["values.put({}, {});"\
+#                       .format(x.const_name, x.var_name) for x in no_id])
 
     @property
     def classname(self):
@@ -97,7 +116,7 @@ class JavaColumn(object):
         elif st == "REAL":
             return "float"
         elif st == "TIMESTAMP":
-            return "long"
+            return "String"
         else:
             return "String"
 
@@ -111,7 +130,7 @@ class JavaColumn(object):
         elif st == "REAL":
             return base.format("Float")
         elif st == "TIMESTAMP":
-            return base.format("Long")
+            return base.format("String")
         else:
             return base.format("String")
 
@@ -120,6 +139,8 @@ class JavaColumn(object):
     def default_value(self):
         if "PRIMARY KEY" in self.column.constraint:
             return "= -1" #_id columns should have a non-null invalid value
+        elif "CURRENT_" in self.column.constraint:
+            return "= null"
         elif "DEFAULT" in self.column.constraint:
             val = self.column.constraint\
                   .replace('PRIMARY KEY', '')\
@@ -138,7 +159,7 @@ class JavaColumn(object):
 
 COL_CONST_TEMPLATE = 'public static final String COL_{0.upper_name} = "{0.name}";'
 
-CLASS_TEMPLATE = '''package com.example.appname.database;
+CLASS_TEMPLATE = '''package {pkg};
 
 import android.content.ContentValues;
 import android.content.UriMatcher;
