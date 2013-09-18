@@ -148,6 +148,18 @@ public class {classname} extends SQLiteOpenHelper {{
     }}
 
     @Override
+    public void onOpen(SQLiteDatabase db) {{
+        super.onOpen(db);
+        if (!db.isReadOnly()) {{
+            // Enable foreign key constraints
+            // This line requires android16
+            // db.setForeignKeyConstraintsEnabled(true);
+            // This line works everywhere though
+            db.execSQL("PRAGMA foreign_keys=ON;");
+        }}
+    }}
+
+    @Override
     public synchronized void onCreate(SQLiteDatabase db) {{
         {create_tables}
     }}
