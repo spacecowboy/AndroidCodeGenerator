@@ -36,17 +36,17 @@ class DatabaseTriggers(object):
         }
     <BLANKLINE>
         private static final String tr_archive =
-    "CREATE TEMP TRIGGER IF NOT EXISTS tr_archive
-      BEFORE DELETE ON notes
-      BEGIN
-        INSERT INTO archive (noteid,notetext) VALUES (old._id,old.text);
-      END";
+    "CREATE TEMP TRIGGER IF NOT EXISTS tr_archive"
+    +"  BEFORE DELETE ON notes"
+    +"  BEGIN"
+    +"    INSERT INTO archive (noteid,notetext) VALUES (old._id,old.text);"
+    +"  END";
         private static final String tr_log =
-    "CREATE  TRIGGER IF NOT EXISTS tr_log
-      BEFORE UPDATE  ON notes
-      BEGIN
-        INSERT INTO log (noteid,notetext) VALUES (new._id,new.text);
-      END";
+    "CREATE  TRIGGER IF NOT EXISTS tr_log"
+    +"  BEFORE UPDATE  ON notes"
+    +"  BEGIN"
+    +"    INSERT INTO log (noteid,notetext) VALUES (new._id,new.text);"
+    +"  END";
     }
 
     """
@@ -93,7 +93,7 @@ class DatabaseTriggers(object):
 
 _D_T = '''
     private static final String {0.name} =
-"{0}";'''
+"{0.java_string}";'''
 
 _C_P = '''
         db.execSQL("DROP TRIGGER IF EXISTS {0.name}";

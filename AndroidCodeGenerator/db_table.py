@@ -307,11 +307,12 @@ class Trigger(object):
         self._when = None
         self._body = []
 
-    def __repr__(self):
-        sql = self.sql_trigger()
+    @property
+    def java_string(self):
+        sql = str(self)
         return '"\n+"'.join(sql.split('\n'))
 
-    def sql_trigger(self):
+    def __repr__(self):
         if self._when is None:
             raise ValueError('You must specify a trigger time, like:\
             Trigger("bob").after, .before or .instead_of')
