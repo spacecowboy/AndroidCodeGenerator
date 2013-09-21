@@ -87,7 +87,7 @@ import android.database.Cursor;
 import android.net.Uri;
 
 public class {provider.classname} extends ContentProvider {{
-    public static final String AUTHORITY = "com.example.appname.AUTHORITY";
+    public static final String AUTHORITY = "{provider.pkg}.AUTHORITY";
     public static final String SCHEME = "content://";
 
     private static final UriMatcher sURIMatcher = new UriMatcher(
