@@ -46,7 +46,7 @@ class Generator(object):
         fpath = os.path.join(self.path,
                              "DBItem.java")
         with open(fpath, 'w') as javafile:
-            javafile.write(dbitem.DBITEM_CLASS)
+            javafile.write(dbitem.DBITEM_CLASS.format(pkg=self.pkg))
 
         # Triggers
         fpath = os.path.join(self.path,
