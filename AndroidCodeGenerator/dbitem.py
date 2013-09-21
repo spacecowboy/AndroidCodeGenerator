@@ -83,13 +83,13 @@ class DBItem(object):
     def baseurihash(self):
         s = sha1(self.classname)
         s.update("baseuri")
-        return "0x" + s.hexdigest()[:8]
+        return "0x" + s.hexdigest()[:7]
 
     @property
     def baseitemhash(self):
         s = sha1(self.classname)
         s.update("baseitem")
-        return "0x" + s.hexdigest()[:8]
+        return "0x" + s.hexdigest()[:7]
 
 class JavaColumn(object):
     def __init__(self, sql_column):
