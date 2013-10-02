@@ -183,6 +183,35 @@ class ForeignKey(object):
         return self
 
 
+class Check(object):
+    """Check constraint on a table
+
+    Example:
+
+    >>> Check("name = 'bob'")
+    CHECK (name = 'bob')
+
+    >>> Check('name', ' > 0')
+    CHECK (name > 0)
+
+    >>> Check('name1', '<=', 'name2')
+    CHECK (name1 <= name2)
+
+    >>> Check(' bob ', '  <  ', 36)
+    CHECK (bob < 36)
+    """
+
+    def __init__(self, *args):
+        if len(args) < 1:
+            raise ValueError("Must specify at least one argument!")
+
+        self.args = args
+
+    def __repr__(self):
+        return "CHECK ({})".format(" "\
+                                   .join([str(x).strip() for x in self.args]))
+
+
 class Table(object):
     """An SQL table which consists of columns
     and constraints. It is prepopualted with an _id column
