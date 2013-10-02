@@ -252,6 +252,7 @@ class Table(object):
         self.name = name
         self._columns = [Column('_id').integer.primary_key]
         self._constraints = []
+        self.fts3_cols = None
 
     def __repr__(self):
         constraints = ",\n  ".join(map(str, self._constraints))
@@ -275,10 +276,9 @@ class Table(object):
 
     def list_column_names(self, sep=",", withid=False, prefix="",
                           exclude=None):
-        """Use to get a single string of column names. By default,
-        it will exclude the _id column. Give an empty list
-        to include _id. If you want to exclude as many columns as you
-        like.
+        """Use to get a single string of column names. By default, it
+        will exclude the _id column. Give an empty list to include
+        _id. If you want to exclude as many columns as you like.
 
         Examples:
 
@@ -409,3 +409,95 @@ class Trigger(object):
             end = ";"
         self._body.append(sqlstatement.strip() + end)
         return self
+
+
+class TableFTS3(object):
+    '''Create a virtual table using fts3, and triggers to keep it up
+    to date.
+
+    Example:
+
+    >>> TableFTS3("tasks").use_cols("title", "note")
+    CREATE VIRTUAL TABLE tasks_fts3 USING FTS3 (_id, title, note);
+    <BLANKLINE>
+    CREATE  TRIGGER  tr_tasks_fts3_ins
+      AFTER INSERT ON tasks
+      BEGIN
+        INSERT INTO tasks_fts3(_id, title, note) VALUES (new._id, new.title, new.note);
+      END
+    <BLANKLINE>
+    CREATE  TRIGGER  tr_tasks_fts3_del
+      AFTER DELETE ON tasks
+      BEGIN
+        DELETE FROM tasks_fts3 WHERE _id IS old._id;
+      END
+    <BLANKLINE>
+    CREATE  TRIGGER  tr_tasks_fts3_up
+      AFTER UPDATE OF title,note ON tasks
+      BEGIN
+        UPDATE tasks_fts3 SET title = new.title, note = new.note WHERE _id IS new._id;
+      END
+
+    '''
+
+    def __init__(self, tablename):
+        '''Argument is the table which fts3 should search in'''
+        self.tablename = tablename
+        self.name = tablename + "_fts3"
+        self.cols = []
+
+    def use_cols(self, *cols):
+        self.cols.extend(cols)
+        return self
+
+    def _cols(self, prefix="", suffix=""):
+        cols = self.cols
+        if '_id' not in cols:
+            cols = ['_id'] + cols
+        cols = ["{}{}{}".format(prefix, col, suffix)\
+                for col in cols]
+        return ", ".join(cols)
+
+    @property
+    def table_stmt(self):
+        if len(self.cols) < 1:
+            raise ValueError('Need some columns!')
+        stmt = "CREATE VIRTUAL TABLE {} USING FTS3 ({});"
+        return stmt.format(self.name,
+                           self._cols())
+
+    @property
+    def trigger_stmts(self):
+        return [str(t) for t in self.triggers]
+
+    @property
+    def triggers(self):
+        if len(self.cols) < 1:
+            raise ValueError('Need some columns!')
+        triggers = []
+        # Insert trigger
+        tr_ins = Trigger("tr_" + self.name + "_ins").after.insert_on(self.tablename)
+        tr_ins.do_sql("INSERT INTO {}\
+({}) VALUES ({})".format(self.name,
+                         self._cols(),
+                         self._cols(prefix="new.")))
+        triggers.append(tr_ins)
+        # Delete trigger
+        tr_del = Trigger("tr_" + self.name + "_del").after.delete_on(self.tablename)
+        tr_del.do_sql("DELETE FROM {} WHERE _id IS old._id".format(self.name))
+        triggers.append(tr_del)
+        # Update trigger
+        tr_up = Trigger("tr_" +
+                        self.name +
+                        "_up").after.update_on(self.tablename,
+                                               *self.cols)
+        s = "UPDATE {} SET {} WHERE _id IS new._id"
+        setters = ["{0} = new.{0}".format(col) for col in self.cols]
+        tr_up.do_sql(s.format(self.name,
+                          ", ".join(setters)))
+        triggers.append(tr_up)
+
+        return triggers
+
+    def __repr__(self):
+        return "\n\n".join([self.table_stmt] + self.trigger_stmts)
