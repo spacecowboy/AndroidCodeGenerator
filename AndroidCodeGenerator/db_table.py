@@ -501,3 +501,85 @@ class TableFTS3(object):
 
     def __repr__(self):
         return "\n\n".join([self.table_stmt] + self.trigger_stmts)
+
+
+class View(object):
+    """
+    Example usage:
+
+    >>> View('music_view').temp.if_not_exists.as_sql('SELECT * FROM artists, \
+songs WHERE artists.name = songs.artistname')
+    CREATE TEMP VIEW IF NOT EXISTS music_view AS SELECT * FROM artists, \
+songs WHERE artists.name = songs.artistname;
+    """
+
+    def __init__(self, name):
+        self._temp = ""
+        self._if_not_exists = ""
+        self._stmt = None
+        self.name = str(name).strip()
+        if self.name is None or len(self.name) < 1:
+            raise ValueError('Must give a valid name!')
+
+    @property
+    def temp(self):
+        self._temp = "TEMP"
+        return self
+
+    @property
+    def if_not_exists(self):
+        self._if_not_exists = "IF NOT EXISTS"
+        return self
+
+    def as_sql(self, select_stmt):
+        self._stmt = str(select_stmt).strip()
+        if not self._stmt.endswith(";"):
+            self._stmt += ";"
+        return self
+
+    def __repr__(self):
+        return "CREATE {} VIEW {} {} AS {}".format(self._temp,
+                                                   self._if_not_exists,
+                                                   self.name,
+                                                   self._stmt)
+
+
+def select_join(tab_cols, on_cols):
+    """
+    Example usage:
+
+    >>> t1 = ('Artist', 'name age'.split(' '))
+    >>> t2 = ('Album', 'name year'.split(' '))
+    >>> t3 = ('Song', 'name duration'.split(' '))
+    >>> on1 = (('Artist', 'name'), ('Album', 'artist'))
+    >>> on2 = (('Artist', 'name'), ('Song', 'artist'))
+    >>> select_join([t1, t2, t3], [on1, on2])
+    'SELECT t1._id AS _id, t1.name AS Artist_name, t1.age AS Artist_age, t2.name AS Album_name, t2.year AS Album_year, t3.name AS Song_name, t3.duration AS Song_duration FROM Album AS t2, Song AS t3, Artist AS t1 WHERE t1.name = t2.artist AND t1.name = t3.artist;'
+    """
+
+    alias = {}
+    # Always include the idea of the first table
+    fields = ["t1._id AS _id"]
+    i = 0
+    for table, cols in tab_cols:
+        i += 1
+        tx = "t{}".format(i)
+        alias[table] = tx
+        fields.extend(["{0}.{1} \
+AS {2}_{1}".format(tx, col, table) for col in cols])
+
+    on = []
+    for (t1, t1col), (t2, t2col) in on_cols:
+        on.append("{}.{} = {}.{}".format(alias[t1],
+                                         t1col,
+                                         alias[t2],
+                                         t2col))
+
+    tables = []
+    for k, v in alias.items():
+        tables.append("{} AS {}".format(k, v))
+
+    return 'SELECT {} \
+FROM {} WHERE {};'.format(', '.join(fields),
+                          ', '.join(tables),
+                          " AND ".join(on))
