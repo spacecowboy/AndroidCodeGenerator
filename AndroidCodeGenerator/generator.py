@@ -2,7 +2,7 @@
 Will print to the terminal what is needed to
 be added to the Manifest.
 
->>> g = Generator()
+>>> g = Generator(srcdir="./src", pkg="com.ex.app.db")
 """
 
 import os, errno

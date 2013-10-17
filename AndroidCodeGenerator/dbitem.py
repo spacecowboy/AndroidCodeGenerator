@@ -97,7 +97,8 @@ class JavaColumn(object):
 
     @property
     def declare_const(self):
-        return COL_CONST_TEMPLATE.format(self.column)
+        return COL_CONST_TEMPLATE.format(self.const_name,
+                                         self.var_name)
 
     @property
     def var_name(self):
@@ -105,7 +106,10 @@ class JavaColumn(object):
 
     @property
     def const_name(self):
-        return "COL_" + self.column.upper_name
+        name = self.column.upper_name
+        while name.startswith("_"):
+            name = name[1:]
+        return "COL_" + name
 
     @property
     def java_type(self):
@@ -157,7 +161,7 @@ class JavaColumn(object):
         return "public {0.java_type} {0.var_name} {0.default_value}"\
                .format(self).strip() + ";"
 
-COL_CONST_TEMPLATE = 'public static final String COL_{0.upper_name} = "{0.name}";'
+COL_CONST_TEMPLATE = 'public static final String {0} = "{1}";'
 
 CLASS_TEMPLATE = '''package {pkg};
 
