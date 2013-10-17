@@ -1,5 +1,6 @@
 AndroidCodeGenerator
 ====================
+**Note, this is a work in progress**
 
 This is a python module which generates Android classes. It is most useful for creating an initial database and contentprovider for a project.
 
@@ -11,6 +12,8 @@ The database structure is basically the same as the one I present in my [tutoria
 Please see _sample.py_ for an example of how to generate all the database files and the
 sample project in _/sample/_ where they are used. The sample is a modified version of the
 tutorial project mentioned above so check that out for a preview of the app itself.
+_sample_with_triggers.py_ shows a simple example where a database trigger is defined
+as well.
 
 An example generation
 can be seen below where quite a simple table is created and
@@ -26,7 +29,7 @@ t = Table('Album').add_cols(Column('albumname').text.not_null.default("''"), \
                                          .on_delete_cascade,\
                                    Unique('albumname').on_conflict_replace)
 
-print(DBItem(t))
+print(DBItem(t, pkg="com.example.appname.database"))
 ```
 
 Result:
