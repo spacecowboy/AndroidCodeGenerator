@@ -56,12 +56,12 @@ public class AlbumItem extends DBItem {
     }
 
     // Column names
-    public static final String COL__ID = "_id";
+    public static final String COL_ID = "_id";
     public static final String COL_ALBUMNAME = "albumname";
     public static final String COL_ARTISTNAME = "artistname";
 
     // For database projection so order is consistent
-    public static final String[] FIELDS = { COL__ID, COL_ALBUMNAME, COL_ARTISTNAME };
+    public static final String[] FIELDS = { COL_ID, COL_ALBUMNAME, COL_ARTISTNAME };
 
     public long _id = -1;
     public String albumname = "";
