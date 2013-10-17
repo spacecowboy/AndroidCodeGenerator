@@ -33,12 +33,16 @@ class SQLTester(object):
     def __init__(self):
         self.tables = []
         self.triggers = []
+        self.views = []
 
     def add_tables(self, *sqltables):
         self.tables.extend(sqltables)
 
     def add_triggers(self, *triggers):
         self.triggers.extend(triggers)
+
+    def add_views(self, *views):
+        self.views.extend(views)
 
     @clear_db
     def test_create(self):
@@ -52,6 +56,10 @@ class SQLTester(object):
             for table in self.tables:
                 print("\n", table)
                 cur.execute(str(table))
+
+            for view in self.views:
+                print("\n", view)
+                cur.execute(str(view))
 
             for trigger in self.triggers:
                 print("\n", trigger)

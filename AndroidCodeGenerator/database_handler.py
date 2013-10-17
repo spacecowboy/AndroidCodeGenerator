@@ -4,13 +4,16 @@
 >>> from db_table import Table, Column, ForeignKey, Unique
 >>> from dbitem import DBItem
 
+>>> pkg = "com.example.appname.database"
+
 >>> t = Table('Album').add_cols(Column('albumname').text.not_null.default("''"), \
                                 Column('artistname').text.not_null)\
 .add_constraints(ForeignKey('artistname').references('artist', 'name')\
               .on_delete_cascade,\
              Unique('albumname').on_conflict_replace)
 
->>> handler = DatabaseHandler("MusicDB", DBItem(t))
+>>> handler = DatabaseHandler("MusicDB", pkg)
+>>> handler.add_dbitems(DBItem(t, pkg))
 """
 
 from dbitem import DBItem
@@ -18,14 +21,10 @@ from dbitem import DBItem
 class DatabaseHandler(object):
     """Generates a DatabaseHandler.java file"""
 
-    def __init__(self, databasename, *items, **kwargs):
+    def __init__(self, databasename, pkg):
         self.databasename = databasename
-        self.pkg = "com.example.appname.database"
-        if 'pkg' in kwargs:
-            self.pkg = kwargs['pkg']
+        self.pkg = pkg
         self.dbitems = []
-        if items is not None and len(items) > 0:
-            self.add_dbitems(*items)
 
     def add_dbitems(self, *items):
         self.dbitems.extend(items)
@@ -225,6 +224,7 @@ public class {classname} extends SQLiteOpenHelper {{
 
         return result;
     }}
+
 
     {table_getters}
 }}

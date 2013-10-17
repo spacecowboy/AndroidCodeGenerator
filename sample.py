@@ -8,7 +8,8 @@ persons = Table('Person').add_cols(Column('firstname').text.not_null.default("''
                                Column('bio').text.not_null.default("''"))
 
 
-g = Generator(path='./sample/src/com/example/appname/database/')
+g = Generator(srcdir='./sample/src/',
+              pkg='com.example.appname.database')
 
 g.add_tables(persons)
 

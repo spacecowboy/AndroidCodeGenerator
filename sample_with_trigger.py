@@ -30,7 +30,8 @@ trigger.do_sql("INSERT INTO {table} ({cols}) VALUES\
                                                        prefix="old.")))
 
 
-g = Generator(path='./sample/src/com/example/appname/database/')
+g = Generator(srcdir='./sample/src/',
+              pkg='com.example.appname.database')
 
 g.add_tables(persons, log)
 g.add_triggers(trigger)

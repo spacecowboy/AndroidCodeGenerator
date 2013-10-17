@@ -11,7 +11,9 @@ class DatabaseTriggers(object):
     >>> t2 = Trigger('tr_log').if_not_exists.before.update_on('notes')\
     .do_sql('INSERT INTO log (noteid,notetext) VALUES (new._id,new.text)')
 
-    >>> DatabaseTriggers(t1, t2)
+    >>> dt = DatabaseTriggers("com.example.appname.database")
+    >>> dt.add(t1, t2)
+    >>> print(dt)
     package com.example.appname.database;
     <BLANKLINE>
     import android.database.sqlite.SQLiteDatabase;
@@ -51,15 +53,9 @@ class DatabaseTriggers(object):
 
     """
 
-    def __init__(self, *triggers, **kwargs):
-        if 'pkg' in kwargs:
-            self.pkg = kwargs['pkg']
-        else:
-            self.pkg = "com.example.appname.database"
-
+    def __init__(self, pkg):
+        self.pkg = pkg
         self.triggers = []
-        if triggers is not None and len(triggers) > 0:
-            self.add(*triggers)
 
     def add(self, *triggers):
         self.triggers.extend(triggers)

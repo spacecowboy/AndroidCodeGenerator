@@ -11,7 +11,7 @@ then a java OrmClass is generated.
               .on_delete_cascade,\
              Unique('albumname').on_conflict_replace)
 
->>> dbitem = DBItem(t)
+>>> dbitem = DBItem(t, pkg="com.ex.app.db")
 
 """
 from hashlib import sha1
@@ -20,7 +20,7 @@ from db_table import Table
 class DBItem(object):
     """Generates an ORM class for the given table"""
 
-    def __init__(self, sql_table, pkg='com.example.appname.database'):
+    def __init__(self, sql_table, pkg):
         self.sql_table = sql_table
         self.pkg = pkg
 
