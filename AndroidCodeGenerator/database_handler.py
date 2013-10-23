@@ -160,8 +160,9 @@ public class {classname} extends SQLiteOpenHelper {{
             // This line works everywhere though
             db.execSQL("PRAGMA foreign_keys=ON;");
 
-            // Create temporary triggers
+            // Create temporary triggers and views
             DatabaseTriggers.createTemp(db);
+            DatabaseViews.createTemp(db);
         }}
     }}
 
@@ -169,8 +170,9 @@ public class {classname} extends SQLiteOpenHelper {{
     public synchronized void onCreate(SQLiteDatabase db) {{
         {create_tables}
 
-        // Create Triggers
+        // Create Triggers and Views
         DatabaseTriggers.create(db);
+        DatabaseViews.create(db);
     }}
 
     // Upgrading database

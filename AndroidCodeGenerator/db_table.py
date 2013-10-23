@@ -527,6 +527,10 @@ songs WHERE artists.name = songs.artistname;
         return self
 
     @property
+    def is_temp(self):
+        return len(self._temp) > 0
+
+    @property
     def if_not_exists(self):
         self._if_not_exists = "IF NOT EXISTS"
         return self
@@ -536,6 +540,11 @@ songs WHERE artists.name = songs.artistname;
         if not self._stmt.endswith(";"):
             self._stmt += ";"
         return self
+
+    @property
+    def java_string(self):
+        sql = str(self)
+        return '"\n+"'.join(sql.split('\n'))
 
     def __repr__(self):
         return "CREATE {} VIEW {} {} AS {}".format(self._temp,

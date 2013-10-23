@@ -10,6 +10,7 @@ import dbitem
 from dbitem import DBItem
 from database_handler import DatabaseHandler
 from database_triggers import DatabaseTriggers
+from database_views import DatabaseViews
 from provider import Provider
 
 class Generator(object):
@@ -56,6 +57,9 @@ class Generator(object):
         db_triggers = DatabaseTriggers(pkg=self.pkg)
         db_triggers.add(*self.triggers)
 
+        db_views = DatabaseViews(pkg=self.pkg)
+        db_views.add(*self.views)
+
         # Generate dbitem files
         for table in self.tables:
             item = DBItem(table, pkg=self.pkg)
@@ -79,6 +83,12 @@ class Generator(object):
                              "DatabaseTriggers.java")
         with open(fpath, 'w') as javafile:
             javafile.write(str(db_triggers))
+
+        # Views
+        fpath = os.path.join(self.path,
+                             "DatabaseViews.java")
+        with open(fpath, 'w') as javafile:
+            javafile.write(str(db_views))
 
         # Database handler
         fpath = os.path.join(self.path,
