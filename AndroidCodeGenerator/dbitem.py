@@ -226,8 +226,8 @@ public class {classname} extends DBItem {{
         sURIMatcher.addURI(ItemProvider.AUTHORITY, TABLE_NAME + "/#", BASEITEMCODE);
     }}
 
-    public static final String TYPE_DIR = "vnd.android.cursor.dir/vnd.example." + TABLE_NAME;
-    public static final String TYPE_ITEM = "vnd.android.cursor.item/vnd.example." + TABLE_NAME;
+    public static final String TYPE_DIR = "vnd.android.cursor.dir/vnd.{pkg}." + TABLE_NAME;
+    public static final String TYPE_ITEM = "vnd.android.cursor.item/vnd.{pkg}." + TABLE_NAME;
 
     public {classname}() {{
         super();
