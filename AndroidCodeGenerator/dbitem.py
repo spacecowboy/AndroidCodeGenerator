@@ -57,6 +57,11 @@ class DBItem(object):
         result = ""
         sep = "\n        "
         for java_col in no_id:
+            if 'NOT NULL' in java_col.column.constraint:
+                simple = True
+            else:
+                simple = False
+
             if "CURRENT_" in java_col.column.constraint:
                 # Timestamp, special case here
                 result = \
@@ -64,11 +69,21 @@ class DBItem(object):
                           "if ({1} != null)\
  values.put({0}, {1});".format(java_col.const_name,
                                java_col.var_name)])
-            else:
+            elif simple:
                 result = \
                 sep.join([result,
                           "values.put({0}, {1});".format(java_col.const_name,
                                                          java_col.var_name)])
+            else:
+                result = \
+                sep.join([result,
+                          "if ({1} != null) {{\n\
+            values.put({0}, {1});\n\
+        }} else {{\n\
+            values.putNull({0});\n\
+        }}".format(java_col.const_name,
+                   java_col.var_name)])
+
 
         return result
 #        return "\n        "\
@@ -115,10 +130,15 @@ class JavaColumn(object):
     def java_type(self):
         st = self.column.type
 
+        if 'NOT NULL' in self.column.constraint:
+            simple = True
+        else:
+            simple = False
+
         if st == "INTEGER":
-            return "long"
+            return "long" if simple else "Long"
         elif st == "REAL":
-            return "float"
+            return "float" if simple else "Float"
         elif st == "TIMESTAMP":
             return "String"
         else:
@@ -126,7 +146,14 @@ class JavaColumn(object):
 
     @property
     def cursor_get(self):
-        base = "cursor.get{}({{}})"
+        # Double braces are converted to single braces at the end of
+        # function.
+        base = "cursor.get{0}({{0}})"
+
+        if ('NOT NULL' not in self.column.constraint
+            and self.column.name != "_id"):
+            base = "cursor.isNull({{0}}) ? null : cursor.get{0}({{0}})"
+
         st = self.column.type
 
         if st == "INTEGER":
